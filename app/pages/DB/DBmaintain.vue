@@ -1,19 +1,19 @@
 <template>
   <div>
-    <h1>這是 DB Maintain 頁面</h1>
-    <p>管理系辦列表</p>
-  </div>
-  <div>
-    <h2>API 資料</h2>
-    <div v-if="errorMessage">
-      <p style="color: red">{{ errorMessage }}</p>
+    <h2>從 API 載入的學生資料</h2>
+
+    <div v-if="errorMessage" class="text-red-500">
+      <p>{{ errorMessage }}</p>
     </div>
-    <div v-else-if="apiData">
-      <pre>{{ JSON.stringify(apiData, null, 2) }}</pre>
-    </div>
-    <div v-else>
-      <p>正在載入資料...</p>
-    </div>
+
+    <v-card v-else>
+      <v-card-title> 學生資料表 </v-card-title>
+      <v-data-table
+        :headers="headers"
+        :items="items"
+        class="elevation-10"
+      ></v-data-table>
+    </v-card>
   </div>
 </template>
 
@@ -23,22 +23,41 @@ definePageMeta({
 });
 
 import { ref, onMounted } from "vue";
+import { getData } from "@/utils/http.js";
 
-const apiData = ref(null);
+// -----------------
+// 狀態變數
+// -----------------
+const items = ref([]); // 用來存放從 API 抓取到的資料
 const errorMessage = ref(null);
 
+// -----------------
+// 表格標頭設定
+// -----------------
+// value: 對應 JSON 資料中的鍵
+// title: 顯示在表格上的欄位名稱
+const headers = [
+  { value: "CLASS", title: "班級" },
+  { value: "DEPTSHORT", title: "系所簡稱" },
+];
+
+// 抓取資料的函式
 const fetchData = async () => {
   try {
-    // 直接呼叫函式，不需要 import
     const data = await getData();
-    apiData.value = data;
-    errorMessage.value = null;
+    items.value = data; // 將抓到的資料賦予 items
+    console.log("value getting test...");
+    console.log(items.value);
+    console.log(
+      items.value
+        .filter((item) => item.CLASS === "輔一甲")
+        .map((item) => item.DEPTSHORT)
+    );
   } catch (error) {
-    errorMessage.value = "無法從 API 取得資料，請檢查伺服器是否運行。";
+    errorMessage.value = "無法從 API 取得資料。";
   }
 };
 
-// 在元件掛載時自動執行
 onMounted(() => {
   fetchData();
 });
