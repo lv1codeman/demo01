@@ -35,6 +35,7 @@
             v-model="inputText"
             class="resizable-textarea text-right"
             label="輸入框"
+            @paste="handlePaste"
           ></v-textarea>
         </v-col>
         <v-col cols="auto" class="px-2 pb-5">
@@ -65,6 +66,16 @@
         </v-col>
       </v-row>
     </v-container>
+
+    <v-snackbar
+      v-model="snackbar"
+      :timeout="2000"
+      color="success"
+      location="bottom"
+      variant="outlined"
+    >
+      已複製到剪貼簿
+    </v-snackbar>
   </div>
 </template>
 
@@ -96,10 +107,19 @@ const convert_types = [
   "課務承辦人分機",
   "課務承辦人Email",
 ];
+const snackbar = ref(false); // 新增控制 snackbar 顯示的狀態變數
 
 let resizeObserverInput = null;
 let resizeObserverOutput = null;
 
+// --- 處理貼上事件的函式 ---
+const handlePaste = (event) => {
+  event.preventDefault();
+  const pasteData = event.clipboardData.getData("text");
+  inputText.value = pasteData.trim();
+};
+
+// --- 清空函式 ---
 const clearTextareas = () => {
   inputText.value = "";
   outputText.value = "";
@@ -108,15 +128,14 @@ const clearTextareas = () => {
 // --- 複製到剪貼簿函式 ---
 const copyToClipboard = async () => {
   try {
-    // 檢查瀏覽器是否支援剪貼簿 API
     if (!navigator.clipboard) {
       alert("你的瀏覽器不支援剪貼簿功能，請手動複製。");
       return;
     }
-
-    // 複製 outputText 的內容
     await navigator.clipboard.writeText(outputText.value);
-    alert("已成功複製到剪貼簿！");
+
+    // 複製成功後，顯示 v-snackbar
+    snackbar.value = true;
   } catch (err) {
     console.error("複製失敗:", err);
     alert("複製失敗，請手動複製。");
@@ -201,7 +220,6 @@ const convertedText = computed(() => {
   if (!inputText.value || !classMap.value.size || !deplistMap.value.size) {
     return "";
   }
-
   const lines = inputText.value.split("\n");
   const results = lines.map((line) => {
     const trimmedLine = line.trim();
