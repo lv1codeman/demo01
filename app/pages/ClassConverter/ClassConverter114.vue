@@ -18,6 +18,7 @@
 
     <div class="conditional-area d-flex align-center">
       <v-select
+        v-model="convert_type"
         class="function-selector mt-4"
         :items="convert_types"
         label="功能選擇"
@@ -30,19 +31,25 @@
       <v-row no-gutters class="align-center">
         <v-col cols="auto">
           <v-textarea
-            v-model="inputText"
             ref="inputRef"
+            v-model="inputText"
             class="resizable-textarea text-right"
             label="輸入框"
           ></v-textarea>
         </v-col>
         <v-col cols="auto" class="px-2 pb-5">
           <div class="d-flex flex-column ga-5">
-            <v-btn color="green-lighten-3 text-grey-darken-4">
+            <v-btn
+              color="green-lighten-3 text-grey-darken-4"
+              @click="copyToClipboard"
+            >
               Copy
               <v-icon icon="mdi-content-copy" end></v-icon>
             </v-btn>
-            <v-btn color="blue-lighten-3 text-grey-darken-4">
+            <v-btn
+              color="blue-lighten-3 text-grey-darken-4"
+              @click="clearTextareas"
+            >
               Clear
               <v-icon icon="mdi-close-circle-outline" end></v-icon>
             </v-btn>
@@ -50,8 +57,8 @@
         </v-col>
         <v-col cols="auto">
           <v-textarea
-            v-model="outputText"
             ref="outputRef"
+            v-model="outputText"
             class="resizable-textarea"
             label="輸出框"
           ></v-textarea>
@@ -62,31 +69,21 @@
 </template>
 
 <script setup>
+import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { getData, getDepData } from "@/utils/http.js";
+
 definePageMeta({
   layout: "layout1",
 });
 
-import { ref, computed, watch, onMounted } from "vue";
-import { getData } from "@/utils/http.js";
-
-const inputRef = ref(null);
-const outputRef = ref(null);
-let isScrolling = false; // 防止無限迴圈的旗標
-
-const handleScroll = (scrollingElement, targetElement) => {
-  if (!isScrolling) {
-    isScrolling = true;
-    targetElement.scrollTop = scrollingElement.scrollTop;
-  }
-  isScrolling = false;
-};
-
-// -------------------
-// 狀態變數
-// -------------------
+// --- 狀態變數 ---
 const classlist = ref([]);
+const deplist = ref([]);
 const inputText = ref("");
 const outputText = ref("");
+const inputRef = ref(null);
+const outputRef = ref(null);
+const convert_type = ref("系所簡稱");
 const convert_types = [
   "系所簡稱",
   "系所全名",
@@ -100,107 +97,153 @@ const convert_types = [
   "課務承辦人Email",
 ];
 
-const syncHeight = () => {
-  if (inputRef.value && outputRef.value) {
-    const inputTextArea = inputRef.value.$el.querySelector("textarea");
-    const outputTextArea = outputRef.value.$el.querySelector("textarea");
+let resizeObserverInput = null;
+let resizeObserverOutput = null;
 
-    // 檢查哪個輸入框被使用者手動改變了大小
-    if (inputTextArea.offsetHeight !== outputTextArea.offsetHeight) {
-      // 假設是 inputTextArea 被改變了
-      outputTextArea.style.height = `${inputTextArea.offsetHeight}px`;
-      // 或者反過來
-      inputTextArea.style.height = `${outputTextArea.offsetHeight}px`;
+const clearTextareas = () => {
+  inputText.value = "";
+  outputText.value = "";
+};
+
+// --- 複製到剪貼簿函式 ---
+const copyToClipboard = async () => {
+  try {
+    // 檢查瀏覽器是否支援剪貼簿 API
+    if (!navigator.clipboard) {
+      alert("你的瀏覽器不支援剪貼簿功能，請手動複製。");
+      return;
     }
+
+    // 複製 outputText 的內容
+    await navigator.clipboard.writeText(outputText.value);
+    alert("已成功複製到剪貼簿！");
+  } catch (err) {
+    console.error("複製失敗:", err);
+    alert("複製失敗，請手動複製。");
   }
 };
 
-// -------------------
-// 頁面載入時獲取資料
-// -------------------
+// --- 頁面載入時獲取資料 ---
 onMounted(async () => {
-  if (inputRef.value && outputRef.value) {
-    inputRef.value.$el
-      .querySelector("textarea")
-      .addEventListener("scroll", () => {
-        handleScroll(
-          inputRef.value.$el.querySelector("textarea"),
-          outputRef.value.$el.querySelector("textarea")
-        );
-      });
-    outputRef.value.$el
-      .querySelector("textarea")
-      .addEventListener("scroll", () => {
-        handleScroll(
-          outputRef.value.$el.querySelector("textarea"),
-          inputRef.value.$el.querySelector("textarea")
-        );
-      });
-  }
-
-  // 獲取實際的 textarea DOM 元素
-  const inputTextArea = inputRef.value.$el.querySelector("textarea");
-  const outputTextArea = outputRef.value.$el.querySelector("textarea");
-
-  // 監聽 inputTextArea 的 resize 事件
-  inputTextArea.addEventListener("mouseup", syncHeight);
-  inputTextArea.addEventListener("touchend", syncHeight);
-
-  // 監聽 outputTextArea 的 resize 事件
-  outputTextArea.addEventListener("mouseup", syncHeight);
-  outputTextArea.addEventListener("touchend", syncHeight);
-
   try {
-    const data = await getData();
-    classlist.value = data;
-    console.log("資料已成功載入到 classlist:", classlist.value);
+    const [classData, depData] = await Promise.all([getData(), getDepData()]);
+    classlist.value = classData;
+    deplist.value = depData;
+    console.log("資料已成功載入");
   } catch (error) {
     console.error("載入資料失敗:", error);
   }
+
+  // 綁定 DOM 元素
+  const inputTextArea = inputRef.value?.$el.querySelector("textarea");
+  const outputTextArea = outputRef.value?.$el.querySelector("textarea");
+
+  if (inputTextArea && outputTextArea) {
+    // 滾動同步
+    const syncScroll = (event) => {
+      if (event.target === inputTextArea) {
+        outputTextArea.scrollTop = inputTextArea.scrollTop;
+      } else if (event.target === outputTextArea) {
+        inputTextArea.scrollTop = outputTextArea.scrollTop;
+      }
+    };
+    inputTextArea.addEventListener("scroll", syncScroll);
+    outputTextArea.addEventListener("scroll", syncScroll);
+
+    // 高度與寬度同步
+    const syncInputToOutput = () => {
+      outputTextArea.style.height = `${inputTextArea.offsetHeight}px`;
+      outputTextArea.style.width = `${inputTextArea.offsetWidth}px`;
+    };
+
+    const syncOutputToInput = () => {
+      inputTextArea.style.height = `${outputTextArea.offsetHeight}px`;
+      inputTextArea.style.width = `${outputTextArea.offsetWidth}px`;
+    };
+
+    // 使用 ResizeObserver 監聽尺寸變化
+    resizeObserverInput = new ResizeObserver(syncInputToOutput);
+    resizeObserverOutput = new ResizeObserver(syncOutputToInput);
+
+    // 開始觀察兩個 textarea
+    resizeObserverInput.observe(inputTextArea);
+    resizeObserverOutput.observe(outputTextArea);
+  }
 });
 
-// -------------------
-// 使用 Map 提升查詢效能
-// -------------------
-const deptMap = computed(() => {
+onBeforeUnmount(() => {
+  if (resizeObserverInput) resizeObserverInput.disconnect();
+  if (resizeObserverOutput) resizeObserverOutput.disconnect();
+});
+
+// --- 查詢邏輯 ---
+const classMap = computed(() => {
   const map = new Map();
   if (classlist.value) {
     classlist.value.forEach((item) => {
-      // 使用 CLASS 欄位作為 key
       map.set(item.CLASS, item.DEPTSHORT);
     });
   }
   return map;
 });
 
-// -------------------
-// 即時轉換邏輯
-// -------------------
-const convertedText = computed(() => {
-  if (!inputText.value || !classlist.value.length) return "";
+const deplistMap = computed(() => {
+  const map = new Map();
+  if (deplist.value) {
+    deplist.value.forEach((item) => {
+      map.set(item.DEPTSHORT, item);
+    });
+  }
+  return map;
+});
 
-  // 將輸入文字按行分割，並對每一行進行處理
+const convertedText = computed(() => {
+  if (!inputText.value || !classMap.value.size || !deplistMap.value.size) {
+    return "";
+  }
+
   const lines = inputText.value.split("\n");
   const results = lines.map((line) => {
     const trimmedLine = line.trim();
-    // 從 map 中查找對應的 DEPTSHORT
-    return deptMap.value.get(trimmedLine) || "查無資料";
+    const deptShort = classMap.value.get(trimmedLine);
+    if (!deptShort) return "查無班級";
+    const deptData = deplistMap.value.get(deptShort);
+    if (!deptData) return "查無系所資料";
+
+    switch (convert_type.value) {
+      case "系所簡稱":
+        return deptData.DEPTSHORT;
+      case "系所全名":
+        return deptData.DEPT;
+      case "學院簡稱":
+        return deptData.COLLEGESHORT;
+      case "學院全名":
+        return deptData.COLLEGE;
+      case "系辦助理":
+        return deptData.AGENT;
+      case "系辦助理分機":
+        return deptData.AGENTEXT;
+      case "系辦助理Email":
+        return deptData.AGENTEMAIL;
+      case "課務承辦人":
+        return deptData.CAGENT;
+      case "課務承辦人分機":
+        return deptData.CAGENTEXT;
+      case "課務承辦人Email":
+        return deptData.CAGENTMAIL;
+      default:
+        return "無效選項";
+    }
   });
 
-  // 將處理後的結果重新組合成字串
   return results.join("\n");
 });
 
-// -------------------
-// 監聽轉換結果並更新輸出框
-// -------------------
 watch(convertedText, (newValue) => {
   outputText.value = newValue;
 });
 
-// -------------------
-// 動態計算寬度 (保持不變)
-// -------------------
+// --- 動態計算寬度 ---
 const selectWidth = computed(() => {
   const longestString = convert_types.reduce(
     (a, b) => (a.length > b.length ? a : b),
@@ -221,6 +264,7 @@ li {
 }
 .v-textarea.resizable-textarea :deep(textarea) {
   resize: both;
+  width: 400px;
 }
 .v-textarea.resizable-textarea.text-right :deep(textarea) {
   text-align: right;
