@@ -2,9 +2,10 @@ import axios from "axios";
 import { useRuntimeConfig } from "#app";
 
 const config = useRuntimeConfig();
-
+console.log(config.public.apiBaseUrl);
 const api = axios.create({
   //   baseURL: "http://localhost:8000",
+  //   baseURL: "https://a77035f43540.ngrok-free.app",
   baseURL: config.public.apiBaseUrl,
   timeout: 5000,
   headers: {

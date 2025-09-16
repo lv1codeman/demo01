@@ -23,9 +23,6 @@ export default defineNuxtConfig({
     ssr: {
       noExternal: ["vuetify"],
     },
-    server: {
-      allowedHosts: ["a77035f43540.ngrok-free.app"],
-    },
   },
 
   css: [],
@@ -39,7 +36,7 @@ export default defineNuxtConfig({
     // },
     // 公開變數，客戶端和伺服器端都可用
     public: {
-      apiBaseUrl: "http://localhost:8000",
+      apiBaseUrl: process.env.NUXT_PUBLIC_API_BASE_URL,
     },
   },
   vuetify: {
