@@ -18,12 +18,12 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from "vue";
+import { useNuxtApp } from "#app"; // 匯入 Nuxt 應用程式實例
+
 definePageMeta({
   layout: "layout1",
 });
-
-import { ref, onMounted } from "vue";
-import { getData } from "@/utils/http.js";
 
 // -----------------
 // 狀態變數
@@ -41,11 +41,15 @@ const headers = [
   { value: "DEPTSHORT", title: "系所簡稱" },
 ];
 
+// 取得我們在外掛中提供的 axios 實例
+const { $curridataAPI } = useNuxtApp();
+
 // 抓取資料的函式
 const fetchData = async () => {
   try {
-    const data = await getData();
-    items.value = data; // 將抓到的資料賦予 items
+    // 直接使用 $curridataAPI 來發送請求
+    const response = await $curridataAPI.get("/classdeptshort");
+    items.value = response.data; // 將抓到的資料賦予 items
     console.log("value getting test...");
     console.log(items.value);
     console.log(
@@ -54,6 +58,7 @@ const fetchData = async () => {
         .map((item) => item.DEPTSHORT)
     );
   } catch (error) {
+    console.error(error); // 打印出完整錯誤訊息以利除錯
     errorMessage.value = "無法從 API 取得資料。";
   }
 };

@@ -71,8 +71,7 @@
       v-model="snackbar"
       :timeout="2000"
       color="success"
-      location="bottom"
-      variant="outlined"
+      location="bottom right"
     >
       已複製到剪貼簿
     </v-snackbar>
@@ -81,7 +80,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
-import { getData, getDepData } from "@/utils/http.js";
+import { useNuxtApp } from "#app";
 
 definePageMeta({
   layout: "layout1",
@@ -107,10 +106,13 @@ const convert_types = [
   "課務承辦人分機",
   "課務承辦人Email",
 ];
-const snackbar = ref(false); // 新增控制 snackbar 顯示的狀態變數
+const snackbar = ref(false);
 
 let resizeObserverInput = null;
 let resizeObserverOutput = null;
+
+// 使用 useNuxtApp() 來取得我們在外掛中提供的 curridataAPI 實例
+const { $curridataAPI } = useNuxtApp();
 
 // --- 處理貼上事件的函式 ---
 const handlePaste = (event) => {
@@ -133,8 +135,6 @@ const copyToClipboard = async () => {
       return;
     }
     await navigator.clipboard.writeText(outputText.value);
-
-    // 複製成功後，顯示 v-snackbar
     snackbar.value = true;
   } catch (err) {
     console.error("複製失敗:", err);
@@ -145,20 +145,23 @@ const copyToClipboard = async () => {
 // --- 頁面載入時獲取資料 ---
 onMounted(async () => {
   try {
-    const [classData, depData] = await Promise.all([getData(), getDepData()]);
-    classlist.value = classData;
-    deplist.value = depData;
+    // 使用 $curridataAPI 來發送請求
+    const [classData, depData] = await Promise.all([
+      $curridataAPI.get("/classdeptshort"),
+      $curridataAPI.get("/deptlist"),
+    ]);
+    classlist.value = classData.data;
+    deplist.value = depData.data;
     console.log("資料已成功載入");
   } catch (error) {
     console.error("載入資料失敗:", error);
   }
 
-  // 綁定 DOM 元素
+  // 綁定 DOM 元素 (以下程式碼保持不變)
   const inputTextArea = inputRef.value?.$el.querySelector("textarea");
   const outputTextArea = outputRef.value?.$el.querySelector("textarea");
 
   if (inputTextArea && outputTextArea) {
-    // 滾動同步
     const syncScroll = (event) => {
       if (event.target === inputTextArea) {
         outputTextArea.scrollTop = inputTextArea.scrollTop;
@@ -169,22 +172,18 @@ onMounted(async () => {
     inputTextArea.addEventListener("scroll", syncScroll);
     outputTextArea.addEventListener("scroll", syncScroll);
 
-    // 高度與寬度同步
     const syncInputToOutput = () => {
       outputTextArea.style.height = `${inputTextArea.offsetHeight}px`;
       outputTextArea.style.width = `${inputTextArea.offsetWidth}px`;
     };
-
     const syncOutputToInput = () => {
       inputTextArea.style.height = `${outputTextArea.offsetHeight}px`;
       inputTextArea.style.width = `${outputTextArea.offsetWidth}px`;
     };
 
-    // 使用 ResizeObserver 監聽尺寸變化
     resizeObserverInput = new ResizeObserver(syncInputToOutput);
     resizeObserverOutput = new ResizeObserver(syncOutputToInput);
 
-    // 開始觀察兩個 textarea
     resizeObserverInput.observe(inputTextArea);
     resizeObserverOutput.observe(outputTextArea);
   }
@@ -253,7 +252,6 @@ const convertedText = computed(() => {
         return "無效選項";
     }
   });
-
   return results.join("\n");
 });
 
@@ -261,7 +259,6 @@ watch(convertedText, (newValue) => {
   outputText.value = newValue;
 });
 
-// --- 動態計算寬度 ---
 const selectWidth = computed(() => {
   const longestString = convert_types.reduce(
     (a, b) => (a.length > b.length ? a : b),
@@ -286,5 +283,12 @@ li {
 }
 .v-textarea.resizable-textarea.text-right :deep(textarea) {
   text-align: right;
+}
+
+.v-snackbar :deep(.v-snackbar__wrapper) {
+  bottom: 100px !important;
+  right: 100px !important;
+  top: auto !important;
+  left: auto !important;
 }
 </style>
