@@ -248,7 +248,7 @@ const convertedText = computed(() => {
       case "課務承辦人分機":
         return deptData.CAGENTEXT;
       case "課務承辦人Email":
-        return deptData.CAGENTMAIL;
+        return deptData.CAGENTEMAIL;
       default:
         return "無效選項";
     }
