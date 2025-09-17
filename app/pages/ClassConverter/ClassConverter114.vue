@@ -1,33 +1,34 @@
 <template>
   <div>
     <h1>班級簡稱轉換(114以後)</h1>
-    <v-card class="my-2 w-50" variant="tonal" color="indigo">
-      <v-card-item>
-        <v-card-title>使用教學</v-card-title>
+    <div class="d-flex">
+      <v-card class="my-2 my-card-wrapper" variant="tonal" color="indigo">
+        <v-card-item>
+          <v-card-title>使用教學</v-card-title>
 
-        <v-card-subtitle>輸入限制：班級簡稱</v-card-subtitle>
-      </v-card-item>
-
-      <v-card-text>
-        <ul>
-          <li>
-            在左輸入框貼上從Excel複製的班級簡稱，右邊輸入框會自動產出結果。
-          </li>
-          <li>貼上後想看不同結果可選擇下拉選項</li>
-          <li>可將結果複製貼回Excel中使用。</li>
-        </ul>
-      </v-card-text>
-      <v-card-actions>
-        <v-btn
-          color="indigo-lighten-3 text-white"
-          variant="elevated"
-          @click="copySampleToClipboard"
-        >
-          點我複製範例
-          <v-icon icon="mdi-content-copy" end></v-icon>
-        </v-btn>
-      </v-card-actions>
-    </v-card>
+          <v-card-subtitle>輸入限制：班級簡稱</v-card-subtitle>
+        </v-card-item>
+        <v-card-text>
+          <ul>
+            <li>
+              在左輸入框貼上從Excel複製的班級簡稱，右邊輸入框會自動產出結果。
+            </li>
+            <li>貼上後想看不同結果可選擇下拉選項</li>
+            <li>可將結果複製貼回Excel中使用。</li>
+          </ul>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn
+            color="indigo-lighten-3 text-white"
+            variant="elevated"
+            @click="copySampleToClipboard"
+          >
+            點我複製範例
+            <v-icon icon="mdi-content-copy" end></v-icon>
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </div>
     <div class="conditional-area d-flex align-center">
       <v-select
         v-model="convert_type"
@@ -94,6 +95,7 @@
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useNuxtApp } from "#app";
 import { sampleContent } from "@/utils/class_sample.js"; // 根據你的路徑調整
+//套用layout
 definePageMeta({
   layout: "layout1",
 });
@@ -182,7 +184,7 @@ onMounted(async () => {
     console.error("載入資料失敗:", error);
   }
 
-  // 綁定 DOM 元素 (這部分保持不變)
+  // textarea卷軸同步、拖曳同步效果
   const inputTextArea = inputRef.value?.$el.querySelector("textarea");
   const outputTextArea = outputRef.value?.$el.querySelector("textarea");
 
@@ -256,6 +258,7 @@ watch(convertedText, (newValue) => {
   outputText.value = newValue;
 });
 
+//計算功能選擇下拉選單的寬度
 const selectWidth = computed(() => {
   const longestString = convert_types.reduce(
     (a, b) => (a.length > b.length ? a : b),
@@ -287,12 +290,13 @@ li {
   text-align: right;
 }
 
-.v-snackbar :deep(.v-snackbar__wrapper) {
+/* 可調整Snackbar提示的位置 */
+/* .v-snackbar :deep(.v-snackbar__wrapper) {
   bottom: 100px !important;
   right: 100px !important;
   top: auto !important;
   left: auto !important;
-}
+} */
 .listitemheight {
   min-height: 20px !important;
 }
@@ -304,6 +308,7 @@ li {
 }
 </style>
 <style>
+/* 因為select下拉選單的項目是在按下後才呈現在v-overlay-container內，所以只能寫在全局style來改變他 */
 .v-overlay-container .v-list-item--density-default.v-list-item--one-line {
   min-height: 20px !important;
 }
