@@ -1,75 +1,32 @@
-# Nuxt 3 Minimal Starter
+# 功能介紹
 
-Look at the [Nuxt 3 documentation](https://nuxt.com/docs/getting-started/introduction) to learn more.
+可將班級簡稱轉成對應的資訊。
 
-## Setup
+# 使用教學
 
-Make sure to install the dependencies:
+> 輸入限制：班級簡稱
 
-```bash
-# npm
-npm install
+- 在左輸入框貼上從 Excel 複製的班級簡稱，右邊輸入框會自動產出結果。
+- 貼上後想看不同結果可選擇下拉選項
+- 可將結果複製貼回 Excel 中使用。
+  <br>
+  <br>
+  <br>
 
-# pnpm
-pnpm install
+# 在本地端執行
 
-# yarn
-yarn install
-
-# bun
-bun install
+```
+pnpm dev
 ```
 
-## Development Server
+# 上傳到 github page
 
-Start the development server on `http://localhost:3000`:
+依序執行
 
-```bash
-# npm
-npm run dev
-
-# pnpm
-pnpm run dev
-
-# yarn
-yarn dev
-
-# bun
-bun run dev
+```
+pnpm run generate
 ```
 
-## Production
-
-Build the application for production:
-
-```bash
-# npm
-npm run build
-
-# pnpm
-pnpm run build
-
-# yarn
-yarn build
-
-# bun
-bun run build
 ```
-
-Locally preview production build:
-
-```bash
-# npm
-npm run preview
-
-# pnpm
-pnpm run preview
-
-# yarn
-yarn preview
-
-# bun
-bun run preview
+pnpm run deploy
 ```
-
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
