@@ -1,13 +1,13 @@
 <template>
   <div>
-    <h2>從 API 載入的學生資料</h2>
+    <h2>系所表維護</h2>
 
     <div v-if="errorMessage" class="text-red-500">
       <p>{{ errorMessage }}</p>
     </div>
 
     <v-card v-else>
-      <v-card-title> 學生資料表 </v-card-title>
+      <v-card-title> 系所表 </v-card-title>
       <v-data-table
         :headers="headers"
         :items="items"
@@ -37,8 +37,17 @@ const errorMessage = ref(null);
 // value: 對應 JSON 資料中的鍵
 // title: 顯示在表格上的欄位名稱
 const headers = [
-  { value: "CLASS", title: "班級" },
+  { value: "COLLEGE", title: "學院全名" },
+  { value: "COLLEGESHORT", title: "學院簡稱" },
   { value: "DEPTSHORT", title: "系所簡稱" },
+  { value: "DEPT", title: "系所全名" },
+  { value: "STYPE", title: "學制" },
+  { value: "AGENT", title: "承辦人" },
+  { value: "AGENTEXT", title: "承辦人分機" },
+  { value: "AGENTEMAIL", title: "承辦人Email" },
+  { value: "CAGENT", title: "課務承辦人" },
+  { value: "CAGENTEXT", title: "課務承辦人分機" },
+  { value: "CAGENTEMAIL", title: "課務承辦人Email" },
 ];
 
 // 取得我們在外掛中提供的 axios 實例
@@ -48,15 +57,8 @@ const { $curridataAPI } = useNuxtApp();
 const fetchData = async () => {
   try {
     // 直接使用 $curridataAPI 來發送請求
-    const response = await $curridataAPI.get("/classdeptshort");
+    const response = await $curridataAPI.get("/get_deptlist");
     items.value = response.data; // 將抓到的資料賦予 items
-    console.log("value getting test...");
-    console.log(items.value);
-    console.log(
-      items.value
-        .filter((item) => item.CLASS === "輔一甲")
-        .map((item) => item.DEPTSHORT)
-    );
   } catch (error) {
     console.error(error); // 打印出完整錯誤訊息以利除錯
     errorMessage.value = "無法從 API 取得資料。";
