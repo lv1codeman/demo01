@@ -87,8 +87,7 @@ definePageMeta({
 });
 
 // --- 狀態變數 ---
-const classlist = ref([]);
-const deplist = ref([]);
+const classMap = ref(new Map()); // 優化：只用一個 Map
 const inputText = ref("");
 const outputText = ref("");
 const inputRef = ref(null);
@@ -111,7 +110,6 @@ const snackbar = ref(false);
 let resizeObserverInput = null;
 let resizeObserverOutput = null;
 
-// 使用 useNuxtApp() 來取得我們在外掛中提供的 curridataAPI 實例
 const { $curridataAPI } = useNuxtApp();
 
 // --- 處理貼上事件的函式 ---
@@ -143,21 +141,32 @@ const copyToClipboard = async () => {
 };
 
 // --- 頁面載入時獲取資料 ---
+// 優化：將兩次 API 呼叫的結果合併成一個 Map，提升查詢效率
 onMounted(async () => {
   try {
-    // 使用 $curridataAPI 來發送請求
     const [classData, depData] = await Promise.all([
       $curridataAPI.get("/classdeptshort"),
       $curridataAPI.get("/deptlist"),
     ]);
-    classlist.value = classData.data;
-    deplist.value = depData.data;
+
+    const deplistMap = new Map();
+    depData.data.forEach((item) => {
+      deplistMap.set(item.DEPTSHORT, item);
+    });
+
+    classData.data.forEach((item) => {
+      const deptData = deplistMap.get(item.DEPTSHORT);
+      if (deptData) {
+        classMap.value.set(item.CLASS, deptData);
+      }
+    });
+
     console.log("資料已成功載入");
   } catch (error) {
     console.error("載入資料失敗:", error);
   }
 
-  // 綁定 DOM 元素 (以下程式碼保持不變)
+  // 綁定 DOM 元素 (這部分保持不變)
   const inputTextArea = inputRef.value?.$el.querySelector("textarea");
   const outputTextArea = outputRef.value?.$el.querySelector("textarea");
 
@@ -194,63 +203,36 @@ onBeforeUnmount(() => {
   if (resizeObserverOutput) resizeObserverOutput.disconnect();
 });
 
-// --- 查詢邏輯 ---
-const classMap = computed(() => {
-  const map = new Map();
-  if (classlist.value) {
-    classlist.value.forEach((item) => {
-      map.set(item.CLASS, item.DEPTSHORT);
-    });
-  }
-  return map;
-});
-
-const deplistMap = computed(() => {
-  const map = new Map();
-  if (deplist.value) {
-    deplist.value.forEach((item) => {
-      map.set(item.DEPTSHORT, item);
-    });
-  }
-  return map;
-});
+// --- 優化：使用物件來管理轉換邏輯 ---
+const conversionFunctions = {
+  系所簡稱: (data) => data.DEPTSHORT,
+  系所全名: (data) => data.DEPT,
+  學院簡稱: (data) => data.COLLEGESHORT,
+  學院全名: (data) => data.COLLEGE,
+  系辦助理: (data) => data.AGENT,
+  系辦助理分機: (data) => data.AGENTEXT,
+  系辦助理Email: (data) => data.AGENTEMAIL,
+  課務承辦人: (data) => data.CAGENT,
+  課務承辦人分機: (data) => data.CAGENTEXT,
+  課務承辦人Email: (data) => data.CAGENTEMAIL,
+};
 
 const convertedText = computed(() => {
-  if (!inputText.value || !classMap.value.size || !deplistMap.value.size) {
+  if (!inputText.value || !classMap.value.size) {
     return "";
   }
   const lines = inputText.value.split("\n");
+  const convertFunc = conversionFunctions[convert_type.value];
+
+  // 檢查選中的功能是否存在
+  if (!convertFunc) return "無效選項";
+
   const results = lines.map((line) => {
     const trimmedLine = line.trim();
-    const deptShort = classMap.value.get(trimmedLine);
-    if (!deptShort) return "查無班級";
-    const deptData = deplistMap.value.get(deptShort);
-    if (!deptData) return "查無系所資料";
-
-    switch (convert_type.value) {
-      case "系所簡稱":
-        return deptData.DEPTSHORT;
-      case "系所全名":
-        return deptData.DEPT;
-      case "學院簡稱":
-        return deptData.COLLEGESHORT;
-      case "學院全名":
-        return deptData.COLLEGE;
-      case "系辦助理":
-        return deptData.AGENT;
-      case "系辦助理分機":
-        return deptData.AGENTEXT;
-      case "系辦助理Email":
-        return deptData.AGENTEMAIL;
-      case "課務承辦人":
-        return deptData.CAGENT;
-      case "課務承辦人分機":
-        return deptData.CAGENTEXT;
-      case "課務承辦人Email":
-        return deptData.CAGENTEMAIL;
-      default:
-        return "無效選項";
-    }
+    const deptData = classMap.value.get(trimmedLine);
+    // 統一錯誤訊息，讓邏輯更清晰
+    if (!deptData) return "查無資料";
+    return convertFunc(deptData);
   });
   return results.join("\n");
 });
