@@ -1,26 +1,33 @@
 <template>
   <div>
-    <h1>班級轉換(114以後)</h1>
+    <h1>班級簡稱轉換(114以後)</h1>
+    <v-card class="my-2 w-50" variant="tonal" color="indigo">
+      <v-card-item>
+        <v-card-title>使用教學</v-card-title>
 
-    <!-- <v-expansion-panels class="mt-4 w-50">
-      <v-expansion-panel title="使用教學">
-        <v-expansion-panel-text>
-          <ul>
-            <li>
-              在左輸入框貼上從Excel複製的班級簡稱，右邊輸入框會自動產出結果。
-            </li>
-            <li>貼上後想看不同結果可選擇下拉選項</li>
-            <li>可將結果複製貼回Excel中使用。</li>
-          </ul>
-        </v-expansion-panel-text>
-      </v-expansion-panel>
-    </v-expansion-panels> -->
-    <h3>使用教學</h3>
-    <ul>
-      <li>在左輸入框貼上從Excel複製的班級簡稱，右邊輸入框會自動產出結果。</li>
-      <li>貼上後想看不同結果可選擇下拉選項</li>
-      <li>可將結果複製貼回Excel中使用。</li>
-    </ul>
+        <v-card-subtitle>輸入限制：班級簡稱</v-card-subtitle>
+      </v-card-item>
+
+      <v-card-text>
+        <ul>
+          <li>
+            在左輸入框貼上從Excel複製的班級簡稱，右邊輸入框會自動產出結果。
+          </li>
+          <li>貼上後想看不同結果可選擇下拉選項</li>
+          <li>可將結果複製貼回Excel中使用。</li>
+        </ul>
+      </v-card-text>
+      <v-card-actions>
+        <v-btn
+          color="indigo-lighten-3 text-white"
+          variant="elevated"
+          @click="copySampleToClipboard"
+        >
+          點我複製範例
+          <v-icon icon="mdi-content-copy" end></v-icon>
+        </v-btn>
+      </v-card-actions>
+    </v-card>
     <div class="conditional-area d-flex align-center">
       <v-select
         v-model="convert_type"
@@ -81,23 +88,12 @@
       已複製到剪貼簿
     </v-snackbar>
   </div>
-
-  <!-- <div class="v-list-item v-list-item--active v-list-item--link v-theme--light v-list-item--density-default v-list-item--one-line rounded-0 v-list-item--variant-text" tabindex="-2" aria-selected="true" role="option">
-  <span class="v-list-item__overlay"></span>
-  <span class="v-list-item__underlay"></span>
-  <div class="v-list-item__prepend">
-    <div class="v-list-item__spacer"></div>
-  </div>
-    <div class="v-list-item__content" data-no-activator="">
-      <div class="v-list-item-title">系所簡稱</div>
-    </div>
-</div> -->
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
 import { useNuxtApp } from "#app";
-
+import { sampleContent } from "@/utils/class_sample.js"; // 根據你的路徑調整
 definePageMeta({
   layout: "layout1",
 });
@@ -149,6 +145,20 @@ const copyToClipboard = async () => {
       return;
     }
     await navigator.clipboard.writeText(outputText.value);
+    snackbar.value = true;
+  } catch (err) {
+    console.error("複製失敗:", err);
+    alert("複製失敗，請手動複製。");
+  }
+};
+
+const copySampleToClipboard = async () => {
+  try {
+    if (!navigator.clipboard) {
+      alert("你的瀏覽器不支援剪貼簿功能，請手動複製。");
+      return;
+    }
+    await navigator.clipboard.writeText(sampleContent);
     snackbar.value = true;
   } catch (err) {
     console.error("複製失敗:", err);
@@ -258,6 +268,10 @@ const selectWidth = computed(() => {
 </script>
 
 <style scoped>
+.btnCopySample {
+  background-color: aqua !important;
+}
+
 li {
   margin-left: 20px;
 }
