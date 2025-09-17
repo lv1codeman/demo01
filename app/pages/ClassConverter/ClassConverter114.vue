@@ -2,7 +2,7 @@
   <div>
     <h1>班級轉換(114以後)</h1>
 
-    <v-expansion-panels class="mt-4 w-50">
+    <!-- <v-expansion-panels class="mt-4 w-50">
       <v-expansion-panel title="使用教學">
         <v-expansion-panel-text>
           <ul>
@@ -14,12 +14,17 @@
           </ul>
         </v-expansion-panel-text>
       </v-expansion-panel>
-    </v-expansion-panels>
-
+    </v-expansion-panels> -->
+    <h3>使用教學</h3>
+    <ul>
+      <li>在左輸入框貼上從Excel複製的班級簡稱，右邊輸入框會自動產出結果。</li>
+      <li>貼上後想看不同結果可選擇下拉選項</li>
+      <li>可將結果複製貼回Excel中使用。</li>
+    </ul>
     <div class="conditional-area d-flex align-center">
       <v-select
         v-model="convert_type"
-        class="function-selector mt-4"
+        class="function-selector mt-4 listitemheight"
         :items="convert_types"
         label="功能選擇"
         :style="{ maxWidth: `${selectWidth}px` }"
@@ -76,6 +81,17 @@
       已複製到剪貼簿
     </v-snackbar>
   </div>
+
+  <!-- <div class="v-list-item v-list-item--active v-list-item--link v-theme--light v-list-item--density-default v-list-item--one-line rounded-0 v-list-item--variant-text" tabindex="-2" aria-selected="true" role="option">
+  <span class="v-list-item__overlay"></span>
+  <span class="v-list-item__underlay"></span>
+  <div class="v-list-item__prepend">
+    <div class="v-list-item__spacer"></div>
+  </div>
+    <div class="v-list-item__content" data-no-activator="">
+      <div class="v-list-item-title">系所簡稱</div>
+    </div>
+</div> -->
 </template>
 
 <script setup>
@@ -87,7 +103,7 @@ definePageMeta({
 });
 
 // --- 狀態變數 ---
-const classMap = ref(new Map()); // 優化：只用一個 Map
+const classMap = ref(new Map());
 const inputText = ref("");
 const outputText = ref("");
 const inputRef = ref(null);
@@ -141,24 +157,14 @@ const copyToClipboard = async () => {
 };
 
 // --- 頁面載入時獲取資料 ---
-// 優化：將兩次 API 呼叫的結果合併成一個 Map，提升查詢效率
 onMounted(async () => {
   try {
-    const [classData, depData] = await Promise.all([
-      $curridataAPI.get("/classdeptshort"),
-      $curridataAPI.get("/deptlist"),
-    ]);
+    // 呼叫新的 API，只獲取一次所有資料
+    const { data } = await $curridataAPI.get("/get_all_data");
 
-    const deplistMap = new Map();
-    depData.data.forEach((item) => {
-      deplistMap.set(item.DEPTSHORT, item);
-    });
-
-    classData.data.forEach((item) => {
-      const deptData = deplistMap.get(item.DEPTSHORT);
-      if (deptData) {
-        classMap.value.set(item.CLASS, deptData);
-      }
+    // 直接將 API 返回的資料轉換為 Map
+    data.forEach((item) => {
+      classMap.value.set(item.CLASS, item);
     });
 
     console.log("資料已成功載入");
@@ -203,7 +209,7 @@ onBeforeUnmount(() => {
   if (resizeObserverOutput) resizeObserverOutput.disconnect();
 });
 
-// --- 優化：使用物件來管理轉換邏輯 ---
+// --- 使用物件來管理轉換邏輯 ---
 const conversionFunctions = {
   系所簡稱: (data) => data.DEPTSHORT,
   系所全名: (data) => data.DEPT,
@@ -224,13 +230,12 @@ const convertedText = computed(() => {
   const lines = inputText.value.split("\n");
   const convertFunc = conversionFunctions[convert_type.value];
 
-  // 檢查選中的功能是否存在
   if (!convertFunc) return "無效選項";
 
   const results = lines.map((line) => {
     const trimmedLine = line.trim();
     const deptData = classMap.value.get(trimmedLine);
-    // 統一錯誤訊息，讓邏輯更清晰
+
     if (!deptData) return "查無資料";
     return convertFunc(deptData);
   });
@@ -261,7 +266,8 @@ li {
 }
 .v-textarea.resizable-textarea :deep(textarea) {
   resize: both;
-  width: 400px;
+  width: 200px;
+  height: 300px;
 }
 .v-textarea.resizable-textarea.text-right :deep(textarea) {
   text-align: right;
@@ -272,5 +278,19 @@ li {
   right: 100px !important;
   top: auto !important;
   left: auto !important;
+}
+.listitemheight {
+  min-height: 20px !important;
+}
+.v-overlay-container .v-overlay__content {
+  max-height: 200px;
+}
+:deep(.v-list-item--density-default.v-list-item--one-line) {
+  min-height: 20px;
+}
+</style>
+<style>
+.v-overlay-container .v-list-item--density-default.v-list-item--one-line {
+  min-height: 20px !important;
 }
 </style>
