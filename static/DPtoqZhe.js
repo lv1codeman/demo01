@@ -1,0 +1,1 @@
+import{_ as n}from"./CqLl4G6D.js";import{g as o,c as a,o as s,a as r,b as _,w as m,d as i}from"#entry";const c=o({__name:"index",setup(p){return(d,e)=>{const t=n;return s(),a("div",null,[e[1]||(e[1]=r("h1",null,"首頁",-1)),_(t,{to:"/DB/DBmaintain"},{default:m(()=>[...e[0]||(e[0]=[i("課務輔助工具",-1)])]),_:1})])}}});export{c as default};
