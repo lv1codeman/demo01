@@ -168,10 +168,10 @@ const dialogType = ref("");
 const form = ref(null);
 
 const cagentData = [
-  { name: "王小明", ext: "1234", email: "wang@example.com" },
-  { name: "陳美麗", ext: "5678", email: "chen@example.com" },
-  { name: "林大華", ext: "9012", email: "lin@example.com" },
-  { name: "張心儀", ext: "3456", email: "zhang@example.com" },
+  { name: "黃思嘉", ext: "5622", email: "loria@cc.ncue.edu.tw" },
+  { name: "邱靜雯", ext: "5623", email: "eenergy177@cc.ncue.edu.tw" },
+  { name: "胡怡婷", ext: "5624", email: "yth1149@cc.ncue.edu.tw" },
+  { name: "鍾博凱", ext: "5626", email: "s26153@cc.ncue.edu.tw" },
 ];
 const cagentOptions = cagentData.map((item) => item.name);
 
@@ -179,6 +179,7 @@ const cagentOptions = cagentData.map((item) => item.name);
 // 表格標頭設定
 // -----------------
 const headers = [
+  { value: "ID", title: "ID" },
   { value: "COLLEGE", title: "學院全名" },
   { value: "COLLEGESHORT", title: "學院簡稱" },
   { value: "DEPTSHORT", title: "系所簡稱" },
@@ -227,7 +228,6 @@ const updateCagentData = (selectedName) => {
 
 const fetchData = async () => {
   try {
-    // 這裡我們假設你的後端 API /get_deptlist 已經會回傳一個唯一的 ID 欄位
     const response = await $curridataAPI.get("/get_deptlist");
     items.value = response.data;
   } catch (error) {
