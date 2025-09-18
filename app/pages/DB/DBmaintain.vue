@@ -109,11 +109,13 @@
                 </v-col>
                 <v-col cols="12" sm="6">
                   <v-select
-                    v-model="editedItem.CAGENT"
-                    :items="cagentOptions"
+                    v-model="cagentObject"
+                    :items="cagentData"
+                    item-title="NAME"
                     label="課務承辦人"
                     :rules="[requiredRule]"
                     @update:model-value="updateCagentData"
+                    return-object
                   ></v-select>
                 </v-col>
                 <v-col cols="12" sm="6">
@@ -149,7 +151,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from "vue";
+import { ref, onMounted, computed, watch } from "vue";
 import { useNuxtApp } from "#app";
 
 definePageMeta({
@@ -166,20 +168,21 @@ const dialog = ref(false);
 const editedItem = ref({});
 const dialogType = ref("");
 const form = ref(null);
-
-const cagentData = [
-  { name: "黃思嘉", ext: "5622", email: "loria@cc.ncue.edu.tw" },
-  { name: "邱靜雯", ext: "5623", email: "eenergy177@cc.ncue.edu.tw" },
-  { name: "胡怡婷", ext: "5624", email: "yth1149@cc.ncue.edu.tw" },
-  { name: "鍾博凱", ext: "5626", email: "s26153@cc.ncue.edu.tw" },
-];
-const cagentOptions = cagentData.map((item) => item.name);
+const cagentData = ref([]);
+const cagentObject = ref(null); // 新增一個變數來儲存選中的完整承辦人物件
 
 // -----------------
 // 表格標頭設定
 // -----------------
 const headers = [
-  { value: "ID", title: "ID" },
+  {
+    value: "ID",
+    title: "ID",
+    sortable: false,
+    width: "0px",
+    class: "d-none",
+    cellClass: "d-none",
+  },
   { value: "COLLEGE", title: "學院全名" },
   { value: "COLLEGESHORT", title: "學院簡稱" },
   { value: "DEPTSHORT", title: "系所簡稱" },
@@ -218,11 +221,27 @@ const requiredRule = (value) => !!value || "此欄位為必填。";
 // 函式
 // -----------------
 
-const updateCagentData = (selectedName) => {
-  const selectedCagent = cagentData.find((item) => item.name === selectedName);
+// 從後端獲取課務承辦人資料
+const fetchCagentData = async () => {
+  try {
+    const response = await $curridataAPI.get("/get_cagent");
+    cagentData.value = response.data;
+  } catch (error) {
+    console.error("無法從 API 取得課務承辦人資料。", error);
+  }
+};
+
+// 根據選中的承辦人物件，更新相關欄位
+const updateCagentData = (selectedCagent) => {
   if (selectedCagent) {
-    editedItem.value.CAGENTEXT = selectedCagent.ext;
-    editedItem.value.CAGENTEMAIL = selectedCagent.email;
+    editedItem.value.CAGENT = selectedCagent.NAME;
+    editedItem.value.CAGENTEXT = selectedCagent.EXT;
+    editedItem.value.CAGENTEMAIL = selectedCagent.EMAIL;
+  } else {
+    // 如果選項被清空，也清除相關欄位
+    editedItem.value.CAGENT = null;
+    editedItem.value.CAGENTEXT = null;
+    editedItem.value.CAGENTEMAIL = null;
   }
 };
 
@@ -239,12 +258,23 @@ const fetchData = async () => {
 const openDialog = (type, item = {}) => {
   dialogType.value = type;
   editedItem.value = { ...item };
+  // 在編輯模式下，根據 editedItem.CAGENT 找到完整的物件來初始化 cagentObject
+  if (type === "edit" && editedItem.value.CAGENT) {
+    // 這裡進行修正：使用 trim() 處理字串，確保比對精確
+    const cagentNameToFind = editedItem.value.CAGENT.trim();
+    cagentObject.value = cagentData.value.find(
+      (c) => c.NAME && c.NAME.trim() === cagentNameToFind
+    );
+  } else {
+    cagentObject.value = null; // 新增模式下清空
+  }
   dialog.value = true;
 };
 
 const closeDialog = () => {
   dialog.value = false;
   editedItem.value = {};
+  cagentObject.value = null; // 清空選中的承辦人物件
   if (form.value) {
     form.value.resetValidation();
   }
@@ -260,7 +290,6 @@ const saveItem = async () => {
     if (dialogType.value === "add") {
       await $curridataAPI.post("/add_dept", editedItem.value);
     } else {
-      // 傳入整個 editedItem 物件，其中包含了 ID
       await $curridataAPI.put("/update_dept", editedItem.value);
     }
     closeDialog();
@@ -274,7 +303,6 @@ const saveItem = async () => {
 const deleteItem = async (item) => {
   if (confirm(`確定要刪除系所 ${item.DEPT} 嗎？`)) {
     try {
-      // 傳入 ID
       await $curridataAPI.delete(`/delete_dept/${item.ID}`);
       await fetchData();
     } catch (error) {
@@ -286,6 +314,7 @@ const deleteItem = async (item) => {
 
 onMounted(() => {
   fetchData();
+  fetchCagentData();
 });
 </script>
 <style scoped>

@@ -11,12 +11,8 @@
     <v-navigation-drawer>
       <v-list nav>
         <v-list-item title="回首頁" link to="/"> </v-list-item>
-        <v-list-item title="資料庫維護" link to="/DB/DBmaintain"> </v-list-item>
-        <v-list-item
-          title="班級轉換(113)"
-          link
-          to="/ClassConverter/ClassConverter113"
-        >
+        <v-list-item title="系所表維護" link to="/DB/DBmaintain"> </v-list-item>
+        <v-list-item title="課務承辦維護" link to="/DB/CurriAgent">
         </v-list-item>
         <v-list-item
           title="班級轉換(114)"
