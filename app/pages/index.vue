@@ -69,29 +69,37 @@ onMounted(() => {
   justify-content: center;
   background-color: #f3f4f6;
   cursor: pointer;
+  overflow: hidden; /* 防止滾動軸 */
 }
 
 .welcome-content {
   text-align: center;
   position: relative;
-  width: 80%; /* 設定寬度以容納圖片 */
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* 圖片的載入動畫：順時針旋轉並淡入 */
 .main-image {
-  max-width: 100%;
-  height: auto;
+  height: 100%; /* 高度佔滿整個容器 */
+  width: auto;
+  object-fit: cover; /* 保持圖片比例並填滿空間 */
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, 0) rotate(180deg) scale(0.8); /* 初始狀態：倒轉且縮小 */
   border-radius: 1rem; /* rounded-xl */
   box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1),
     0 4px 6px -2px rgba(0, 0, 0, 0.05);
   animation: fadeInAndRotate 1s forwards ease-in-out;
-  transition: transform 0.1s ease;
-  transform: rotate(180deg) scale(0.8); /* 初始狀態：倒轉且縮小 */
 }
 
 /* 圖片懸停效果 */
 .main-image:hover {
-  transform: scale(1.05);
+  transform: translate(-50%, 0) scale(1.05) rotate(360deg);
 }
 
 /* 主標題的出現動畫：由下往上浮現並淡入 */
@@ -151,11 +159,11 @@ onMounted(() => {
 @keyframes fadeInAndRotate {
   from {
     opacity: 0;
-    transform: rotate(160deg) scale(0.5);
+    transform: translate(-50%, 0) rotate(160deg) scale(0.5);
   }
   to {
     opacity: 1;
-    transform: rotate(360deg) scale(1);
+    transform: translate(-50%, 0) rotate(360deg) scale(1);
   }
 }
 

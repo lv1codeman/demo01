@@ -1,12 +1,15 @@
 <template>
-  <v-layout class="rounded rounded-md border">
-    <v-app-bar>
+  <!-- 將最外層的 v-layout 替換為 v-app，確保佈局系統正常運作 -->
+  <v-app>
+    <!-- 加上 app 屬性，讓 v-app-bar 參與整體佈局 -->
+    <v-app-bar app>
       <NuxtLink to="/">
         <v-app-bar-title class="pl-4">課務輔助工具</v-app-bar-title>
       </NuxtLink>
     </v-app-bar>
 
-    <v-navigation-drawer>
+    <!-- 加上 app 屬性，確保導覽列會將 v-main 的內容往右推 -->
+    <v-navigation-drawer expand-on-hover permanent rail app>
       <v-list nav>
         <!-- 回首頁 -->
         <v-list-item
@@ -58,12 +61,12 @@
       </v-list>
     </v-navigation-drawer>
 
-    <v-main class="d-flex align-center justify-center">
+    <v-main class="d-flex justify-center">
       <v-container>
         <slot />
       </v-container>
     </v-main>
-  </v-layout>
+  </v-app>
 </template>
 
 <style scoped>
