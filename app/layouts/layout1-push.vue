@@ -1,12 +1,13 @@
 <template>
   <v-app>
-    <v-app-bar>
+    <v-app-bar app>
       <NuxtLink to="/">
         <v-app-bar-title class="pl-4">課務輔助工具</v-app-bar-title>
       </NuxtLink>
     </v-app-bar>
     <v-navigation-drawer
       permanent
+      app
       :rail="isDrawerExpanded"
       @mouseenter="isDrawerExpanded = false"
       @mouseleave="isDrawerExpanded = true"
@@ -56,7 +57,7 @@
         </v-list-group>
       </v-list>
     </v-navigation-drawer>
-    <v-main class="d-flex justify-center mt-2">
+    <v-main class="d-flex align-center justify-center">
       <v-container>
         <slot />
       </v-container>
