@@ -14,26 +14,51 @@
 
       <!-- 課務工具文字 -->
       <h1 class="font-bold welcome-text">課務輔助工具</h1>
+
+      <!-- 點擊進入副提示 -->
+      <h2
+        class="subtitle-text"
+        :class="{
+          'is-visible': isMainAnimationFinished,
+          'is-flashing': isFlashing,
+        }"
+      >
+        - PRESS START -
+      </h2>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
+import { ref, onMounted } from "vue";
 import { useRouter } from "vue-router";
 
 const isExiting = ref(false);
+const isMainAnimationFinished = ref(false);
+const isFlashing = ref(false);
 const router = useRouter();
 
 const handleContainerClick = () => {
   if (!isExiting.value) {
     isExiting.value = true;
+    isFlashing.value = false;
     // 等待淡出動畫完成後導航
     setTimeout(() => {
       router.push("/ClassConverter/ClassConverter114");
     }, 300); // 這裡的 500ms 應與 .fade-out-and-rotate 的 animation-duration 相同 (1s * 0.5)
   }
 };
+
+onMounted(() => {
+  // 等待主要動畫結束後 (1s)
+  setTimeout(() => {
+    isMainAnimationFinished.value = true;
+    // 等待副標題淡入後 (0.5s)
+    setTimeout(() => {
+      isFlashing.value = true;
+    }, 500);
+  }, 1000);
+});
 </script>
 
 <style scoped>
@@ -69,7 +94,7 @@ const handleContainerClick = () => {
   transform: scale(1.05);
 }
 
-/* 文字的出現動畫：由下往上浮現並淡入 */
+/* 主標題的出現動畫：由下往上浮現並淡入 */
 .welcome-text {
   position: absolute;
   left: 50%;
@@ -90,9 +115,37 @@ const handleContainerClick = () => {
   }
 }
 
+/* 副標題的樣式 */
+.subtitle-text {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  white-space: nowrap;
+  top: 24%; /* 最終位置，在主標題下方 */
+  font-size: 35px; /* 電腦版大小 (70px * 0.7) */
+  transition: opacity 0.68s ease-in-out;
+  color: #f3f4f6;
+  font-weight: 500;
+}
+
+@media (max-width: 640px) {
+  .subtitle-text {
+    font-size: 21px; /* 手機版大小 (30px * 0.7) */
+  }
+}
+
+.subtitle-text.is-visible {
+  opacity: 1;
+}
+
+.subtitle-text.is-flashing {
+  animation: flashing 1s infinite alternate;
+}
+
 /* 點擊後整體內容的退出動畫：逆時針旋轉並淡出 */
 .fade-out-and-rotate {
-  animation: fadeOutAndRotate 0.3s forwards ease-in-out; /* 速度加快0.5倍 */
+  animation: fadeOutAndRotate 0.3s forwards ease-in-out;
 }
 
 @keyframes fadeInAndRotate {
@@ -102,7 +155,7 @@ const handleContainerClick = () => {
   }
   to {
     opacity: 1;
-    transform: rotate(360deg) scale(1); /* 順時針旋轉半圈 */
+    transform: rotate(360deg) scale(1);
   }
 }
 
@@ -110,12 +163,21 @@ const handleContainerClick = () => {
   from {
     opacity: 0;
     top: 50%;
-    color: #4b5563; /* 初始顏色為灰色 */
+    color: #4b5563;
   }
   to {
     opacity: 1;
-    top: 15%; /* 移動到最終位置 */
-    color: #ffffff; /* 最終顏色為白色 */
+    top: 15%;
+    color: #ffffff;
+  }
+}
+
+@keyframes flashing {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0.3;
   }
 }
 
@@ -126,7 +188,7 @@ const handleContainerClick = () => {
   }
   to {
     opacity: 0;
-    transform: rotate(-180deg) scale(0.8); /* 逆時針旋轉半圈 */
+    transform: rotate(-180deg) scale(0.8);
   }
 }
 </style>
