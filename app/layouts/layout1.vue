@@ -1,16 +1,11 @@
 <template>
   <v-app>
-    <v-app-bar>
+    <v-app-bar app>
       <NuxtLink to="/">
         <v-app-bar-title class="pl-4">課務輔助工具</v-app-bar-title>
       </NuxtLink>
     </v-app-bar>
-    <v-navigation-drawer
-      permanent
-      :rail="isDrawerExpanded"
-      @mouseenter="isDrawerExpanded = false"
-      @mouseleave="isDrawerExpanded = true"
-    >
+    <v-navigation-drawer expand-on-hover permanent rail app>
       <v-list nav>
         <v-list-item
           title="回首頁"
@@ -65,8 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from "vue";
-const isDrawerExpanded = ref(true);
+// 這個版本不需要額外的 script 來控制展開狀態
 </script>
 
 <style scoped>

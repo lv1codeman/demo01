@@ -1,93 +1,95 @@
 <template>
-  <div>
-    <h1>班級簡稱轉換(114以後)</h1>
-    <div class="d-flex">
-      <v-card class="my-2 my-card-wrapper" variant="tonal" color="indigo">
-        <v-card-item>
-          <v-card-title>使用教學</v-card-title>
+  <div class="d-flex justify-center">
+    <div>
+      <h1>班級簡稱轉換(114以後)</h1>
+      <div class="d-flex">
+        <v-card class="my-2 my-card-wrapper" variant="tonal" color="indigo">
+          <v-card-item>
+            <v-card-title>使用教學</v-card-title>
 
-          <v-card-subtitle>輸入限制：班級簡稱</v-card-subtitle>
-        </v-card-item>
-        <v-card-text>
-          <ul>
-            <li>
-              在左輸入框貼上從Excel複製的班級簡稱，右邊輸入框會自動產出結果。
-            </li>
-            <li>貼上後想看不同結果可選擇下拉選項</li>
-            <li>可將結果複製貼回Excel中使用。</li>
-          </ul>
-        </v-card-text>
-        <v-card-actions>
-          <v-btn
-            color="indigo-lighten-3 text-white"
-            variant="elevated"
-            @click="copySampleToClipboard"
-          >
-            點我複製範例
-            <v-icon icon="mdi-content-copy" end></v-icon>
-          </v-btn>
-        </v-card-actions>
-      </v-card>
-    </div>
-    <div class="conditional-area d-flex align-center">
-      <v-select
-        v-model="convert_type"
-        class="function-selector mt-4 listitemheight"
-        :items="convert_types"
-        label="功能選擇"
-        :style="{ maxWidth: `${selectWidth}px` }"
-        density="comfortable"
-      ></v-select>
-    </div>
-
-    <v-container id="mpage" class="px-0">
-      <v-row no-gutters class="align-center">
-        <v-col cols="auto">
-          <v-textarea
-            ref="inputRef"
-            v-model="inputText"
-            class="resizable-textarea text-right"
-            label="輸入框"
-            @paste="handlePaste"
-          ></v-textarea>
-        </v-col>
-        <v-col cols="auto" class="px-2 pb-5">
-          <div class="d-flex flex-column ga-5">
+            <v-card-subtitle>輸入限制：班級簡稱</v-card-subtitle>
+          </v-card-item>
+          <v-card-text>
+            <ul>
+              <li>
+                在左輸入框貼上從Excel複製的班級簡稱，右邊輸入框會自動產出結果。
+              </li>
+              <li>貼上後想看不同結果可選擇下拉選項</li>
+              <li>可將結果複製貼回Excel中使用。</li>
+            </ul>
+          </v-card-text>
+          <v-card-actions>
             <v-btn
-              color="green-lighten-3 text-grey-darken-4"
-              @click="copyToClipboard"
+              color="indigo-lighten-3 text-white"
+              variant="elevated"
+              @click="copySampleToClipboard"
             >
-              Copy
+              點我複製範例
               <v-icon icon="mdi-content-copy" end></v-icon>
             </v-btn>
-            <v-btn
-              color="blue-lighten-3 text-grey-darken-4"
-              @click="clearTextareas"
-            >
-              Clear
-              <v-icon icon="mdi-close-circle-outline" end></v-icon>
-            </v-btn>
-          </div>
-        </v-col>
-        <v-col cols="auto">
-          <v-textarea
-            ref="outputRef"
-            v-model="outputText"
-            class="resizable-textarea"
-            label="輸出框"
-          ></v-textarea>
-        </v-col>
-      </v-row>
-    </v-container>
+          </v-card-actions>
+        </v-card>
+      </div>
+      <div class="conditional-area d-flex align-center">
+        <v-select
+          v-model="convert_type"
+          class="function-selector mt-4 listitemheight"
+          :items="convert_types"
+          label="功能選擇"
+          :style="{ maxWidth: `${selectWidth}px` }"
+          density="comfortable"
+        ></v-select>
+      </div>
 
-    <v-snackbar
-      v-model="snackbar"
-      :timeout="2000"
-      color="success"
-      location="bottom right"
-    >
-      已複製到剪貼簿
-    </v-snackbar>
+      <v-container id="mpage" class="px-0">
+        <v-row no-gutters class="align-center">
+          <v-col cols="auto">
+            <v-textarea
+              ref="inputRef"
+              v-model="inputText"
+              class="resizable-textarea text-right"
+              label="輸入框"
+              @paste="handlePaste"
+            ></v-textarea>
+          </v-col>
+          <v-col cols="auto" class="px-2 pb-5">
+            <div class="d-flex flex-column ga-5">
+              <v-btn
+                color="green-lighten-3 text-grey-darken-4"
+                @click="copyToClipboard"
+              >
+                Copy
+                <v-icon icon="mdi-content-copy" end></v-icon>
+              </v-btn>
+              <v-btn
+                color="blue-lighten-3 text-grey-darken-4"
+                @click="clearTextareas"
+              >
+                Clear
+                <v-icon icon="mdi-close-circle-outline" end></v-icon>
+              </v-btn>
+            </div>
+          </v-col>
+          <v-col cols="auto">
+            <v-textarea
+              ref="outputRef"
+              v-model="outputText"
+              class="resizable-textarea"
+              label="輸出框"
+            ></v-textarea>
+          </v-col>
+        </v-row>
+      </v-container>
+
+      <v-snackbar
+        v-model="snackbar"
+        :timeout="2000"
+        color="success"
+        location="bottom right"
+      >
+        已複製到剪貼簿
+      </v-snackbar>
+    </div>
   </div>
 </template>
 
