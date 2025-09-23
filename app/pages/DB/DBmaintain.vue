@@ -16,7 +16,7 @@
 </template>
 
 <script setup>
-import DataTableCRUD from "../../components/DataTableCRUD.vue";
+import DataTableCRUD from "@/components/DataTableCRUD.vue";
 import { ref, onMounted, computed, reactive } from "vue";
 import { useNuxtApp } from "#app";
 
