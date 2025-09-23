@@ -25,8 +25,20 @@
             title="系所表維護"
             link
             to="/DB/DBmaintain"
-            prepend-icon="mdi-database-edit"
+            prepend-icon="mdi-table-edit"
           ></v-list-item>
+          <!-- 應用 v-tooltip 來顯示完整標題 -->
+          <v-tooltip text="班級-系所簡稱對照表維護" location="end">
+            <template v-slot:activator="{ props }">
+              <v-list-item
+                v-bind="props"
+                title="班級-系所簡稱對照表維護"
+                link
+                to="/DB/ClassDeptshort"
+                prepend-icon="mdi-compare-horizontal"
+              ></v-list-item>
+            </template>
+          </v-tooltip>
           <v-list-item
             title="課務承辦維護"
             link
