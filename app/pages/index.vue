@@ -23,7 +23,7 @@
           'is-flashing': isFlashing,
         }"
       >
-        - PRESS START -
+        - PRESS TO CONTINUE -
       </h2>
     </div>
   </div>
