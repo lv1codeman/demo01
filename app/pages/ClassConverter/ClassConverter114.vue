@@ -225,16 +225,16 @@ onBeforeUnmount(() => {
 
 // --- 使用物件來管理轉換邏輯 ---
 const conversionFunctions = {
-  系所簡稱: (data) => data.DEPTSHORT,
   系所全名: (data) => data.DEPT,
-  學院簡稱: (data) => data.COLLEGESHORT,
+  系所簡稱: (data) => data.DEPT_S,
   學院全名: (data) => data.COLLEGE,
-  系辦助理: (data) => data.AGENT,
-  系辦助理分機: (data) => data.AGENTEXT,
-  系辦助理Email: (data) => data.AGENTEMAIL,
-  課務承辦人: (data) => data.CAGENT,
-  課務承辦人分機: (data) => data.CAGENTEXT,
-  課務承辦人Email: (data) => data.CAGENTEMAIL,
+  學院簡稱: (data) => data.COLLEGE_S,
+  系辦助理: (data) => data.AGENT_NAME,
+  系辦助理分機: (data) => data.AGENT_EXT,
+  系辦助理Email: (data) => data.AGENT_EMAIL,
+  課務承辦人: (data) => data.CAGENT_NAME,
+  課務承辦人分機: (data) => data.CAGENT_EXT,
+  課務承辦人Email: (data) => data.CAGENT_EMAIL,
 };
 
 const convertedText = computed(() => {

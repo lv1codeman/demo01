@@ -32,15 +32,15 @@ const headers = [
     cellClass: "d-none",
   },
   { value: "CLASS", title: "班級" },
-  { value: "DEPTSHORT", title: "系所簡稱" },
+  { value: "DEPT_S", title: "系所簡稱" },
   { value: "actions", title: "操作", sortable: false },
 ];
 
 const classDeptshortApiEndpoints = {
-  get: "/get_class_deptshort",
-  add: "/add_class_deptshort",
-  update: "/update_class_deptshort/{id}",
-  delete: "/delete_class_deptshort/{id}",
+  get: "/get_map_cls_dept",
+  add: "/create_map_cls_dept",
+  update: "/update_map_cls_dept/{id}",
+  delete: "/delete_map_cls_dept/{id}",
 };
 
 const requiredRule = (value) => !!value || "此欄位為必填。";
@@ -48,6 +48,6 @@ const requiredRule = (value) => !!value || "此欄位為必填。";
 // 定義表單欄位
 const cagentFormFields = [
   { key: "CLASS", label: "班級", type: "text", rules: [requiredRule] },
-  { key: "DEPTSHORT", label: "系所簡稱", type: "text", rules: [requiredRule] },
+  { key: "DEPT_S", label: "系所簡稱", type: "text", rules: [requiredRule] },
 ];
 </script>

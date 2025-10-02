@@ -38,8 +38,8 @@ const headers = [
 ];
 
 const cagentApiEndpoints = {
-  get: "/get_cagent",
-  add: "/add_cagent",
+  get: "/get_cagents",
+  add: "/create_cagent",
   update: "/update_cagent/{id}",
   delete: "/delete_cagent/{id}",
 };

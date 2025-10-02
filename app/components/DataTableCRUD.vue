@@ -113,6 +113,20 @@
       </v-card>
     </v-dialog>
   </div>
+  <v-snackbar
+    v-model="snackbar"
+    :timeout="2000"
+    color="deep-orange-darken-1"
+    location="top center"
+  >
+    {{ text }}
+
+    <template v-slot:actions>
+      <v-btn color="pink" variant="text" @click="snackbar = false">
+        Close
+      </v-btn>
+    </template>
+  </v-snackbar>
 </template>
 
 <script setup>
@@ -121,7 +135,8 @@ import { useNuxtApp } from "#app";
 
 // Emit custom events
 const emit = defineEmits(["field-updated", "on-edit"]);
-
+const snackbar = ref(false);
+const text = `[error 409] 系所簡稱必須為唯一值，已有相同的系所簡稱。`;
 // 宣告 props
 const props = defineProps({
   title: String,
@@ -231,14 +246,17 @@ const saveItem = async () => {
         itemToSave[field.key][field["item-title"] || "NAME"];
     }
   }
-
+  //新增前看一下itemToSave
+  console.log("itemToSave", itemToSave);
   try {
     if (dialogType.value === "add") {
+      console.log("create by itemToSave", itemToSave);
       await $curridataAPI.post(
         props.apiUrl + props.apiEndpoints.add,
         itemToSave
       );
     } else {
+      // 修改、更新
       const endpoint = props.apiEndpoints.update.replace("{id}", itemToSave.ID);
       await $curridataAPI.put(props.apiUrl + endpoint, itemToSave);
     }
@@ -246,6 +264,9 @@ const saveItem = async () => {
     await fetchData();
   } catch (error) {
     console.error(error);
+    console.log(error.message);
+    console.log(error.response.data.detail);
+    snackbar.value = true;
     errorMessage.value = error.response?.data?.detail || "儲存資料失敗。";
   }
 };
